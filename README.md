@@ -1,8 +1,8 @@
 # go_commend_line
  
 ### 指令列生成器
-源自於對於龐大專案開發過程中，可能需要重複下相同的指令而感到厭煩
-透過使用nicegui([ex4nicegui](https://github.com/CrystalWindSnake/ex4nicegui)擴展包)+結合資料庫儲存的方式，可以隨時攜帶下過的指令包隨時取用
+源自於對於龐大專案開發過程中，可能需要重複下相同的指令而感到厭煩  
+透過使用nicegui([ex4nicegui](https://github.com/CrystalWindSnake/ex4nicegui)擴展包)+結合資料庫儲存的方式，可以隨時攜帶下過的指令包隨時取用  
 發想來自官方的"ToDoList"
 
 ### 功能說明

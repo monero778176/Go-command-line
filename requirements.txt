@@ -1,0 +1,6 @@
+ex4nicegui==0.8.3
+nicegui==2.5.0
+pandas==2.0.3
+pyperclip==1.9.0
+SQLAlchemy==2.0.36
+numpy==1.26.4

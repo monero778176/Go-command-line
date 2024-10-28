@@ -73,7 +73,7 @@ def show_search_result_ui(table_name,cat=''):
 
 
 
-# custom category save to database
+# custom set category save to database
 def save_cate_to_database_ui():
     with ui.card().bind_visibility_from(save_,'value').classes('w-200'):
         ui.label(f'會被存入的value').tailwind.font_weight('extrabold').text_color('orange-400').\
@@ -85,6 +85,8 @@ def save_cate_to_database_ui():
         rxui.button('save',on_click=lambda:save_commend_to_database(cList.display_commend.value, save_cat_input.value) )
         save_cat_input.set_value('')
 
+
+# handcraft function: copy to clipboard and notify
 def copy_and_notify(label_):
     pyperclip.copy(label_)
     ui.notify('Copy the commend')
