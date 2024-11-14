@@ -19,8 +19,8 @@ class User(Base):
     # value = Column(String(100))  # 用來儲存指令的
     # category = Column(String(20))
 
-class Commend(Base):
-    __tablename__ = 'commend'
+class Command(Base):
+    __tablename__ = 'command'
     __table_args__ = {'extend_existing': True} 
 
     # 表的结构:
@@ -29,27 +29,13 @@ class Commend(Base):
     category = Column(String(20))
     descript = Column(String(50))
 
-# 初始化数据库连接:
-# engine = create_engine('mysql+mysqlconnector://root:password@localhost:3306/test')
-# engine = create_engine('sqlite:///test.db')
-# # 创建DBSession类型:
-# DBSession = sessionmaker(bind=engine)
 
-# Base.metadata.create_all(engine)
 
-# session = DBSession()
-# session.add(User(id=5,name='test'))
-# # 创建Query查询，filter是where条件，最后调用one()返回唯一行，如果调用all()则返回所有行:
-# user = session.query(User).filter(User.id=='5').one()
-# # 打印类型和对象的name属性:
-# print('type:', type(user))
-# print('name:', user.name)
-# # 关闭Session:
-# session.close()
-table_dict = {'commend':Commend,'user':User}
+
+table_dict = {'command':Command}
 
 class database_opertor:
-    def __init__(self) -> None:
+    def __init__(self):
         # pass
 
         self.engine = create_engine('sqlite:///test.db')
@@ -109,15 +95,32 @@ class database_opertor:
         session.close()
 
     def drop_table(self):
-        Base.metadata.drop_all(bind=self.engine, tables=[Commend.__table__])
+        Base.metadata.drop_all(bind=self.engine, tables=[Command.__table__])
+
+
+    def search_all_category(self,table_name:str):
+        session = self.DBSession()
+        result = session.query(table_dict[table_name].category).all()
+
+        result = [item[0] for item in result]
+        result = list(set(result))  # 單一不重複
+
+        return result
+        
+
 
 
 if __name__=='__main__':
 
     d_operator = database_opertor()
     # d_operator.drop_table()
-    c_item = Commend(value='test',category='ttest',descript='None temp')
+    c_item = Command(value='test',category='test',descript='None temp')  # 測試資料庫功能使用
     d_operator.insert(c_item)
+
+
+
+    ## 查詢類別 column 的所有類別
+    # d_operator.search_all_category(table_name='commend')
 
 
     

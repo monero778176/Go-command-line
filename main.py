@@ -9,6 +9,12 @@ from database_go import *
 
 ui.add_head_html('<link href="https://fonts.googleapis.com/css2?family=Material+Icons" rel="stylesheet">')
 
+
+
+## 定義文字 css 樣式
+title_classes = 'font-sans underline text-lg font-bold'
+
+## 參數名與其值 結構定義
 class pair_param(rxui.ViewModel):
     name=''
     value=''
@@ -19,6 +25,7 @@ class pair_param(rxui.ViewModel):
         self.name = name
         self.value = value
         self.selected = selected
+
 
 
 class commend_list(rxui.ViewModel):
@@ -45,7 +52,7 @@ class commend_list(rxui.ViewModel):
         for idx,item in enumerate(cList.comList):
             if item.selected:
                 if idx!=0:
-                    new_final_commend+='--'+item.name+' '+item.value
+                    new_final_commend+=' --'+item.name+' '+item.value
                 else:
                     new_final_commend+=item.name+' '
 
@@ -56,6 +63,9 @@ class commend_list(rxui.ViewModel):
 # 顯示資料庫用的
 d_opter = database_opertor()  # database create, init
 cs_result = None
+
+cbox_search = to_ref(False)
+cbox_save = to_ref(False)
 
 # show db search result, and ui refresh
 @ui.refreshable
@@ -74,10 +84,12 @@ def show_search_result_ui(table_name,cat=''):
 
 
 # custom set category save to database
+'''儲存到自己想要的類別'''
 def save_cate_to_database_ui():
-    with ui.card().bind_visibility_from(save_,'value').classes('w-200'):
-        ui.label(f'會被存入的value').tailwind.font_weight('extrabold').text_color('orange-400').\
-                font_size('2xl').text_underline_offset('2px')
+    with ui.card().bind_visibility_from(cbox_save,'value').classes('w-200'):
+        # ui.label(f'會被存入的value').tailwind.font_weight('extrabold').text_color('orange-400').\
+        #         font_size('2xl').text_underline_offset('2px')
+        ui.label('存入類別').classes(title_classes)
         rxui.label(lambda: f' {cList.display_commend.value}')
 
         save_cat_input = ui.input(label='category')  # 輸入要儲存的類別
@@ -90,17 +102,12 @@ def save_cate_to_database_ui():
 def copy_and_notify(label_):
     pyperclip.copy(label_)
     ui.notify('Copy the commend')
-    
 
 
-#commend list
-cList = commend_list()
-cList.add('python')
-
-with ui.row():
+def main_controll_ui():   # 主控台 section
     with ui.card().classes('w-200'):
 
-        rxui.label('commend generator')
+        rxui.label('Command generator').classes(title_classes)
         
         @rxui.vfor(cList.comList)  # for 迴圈 list
         def _(store:rxui.VforStore[pair_param]):
@@ -110,7 +117,9 @@ with ui.row():
             with ui.row().classes('justify-center'):
                 rxui.checkbox(value=p_item.selected).classes('w-10').classes('justify-center m-auto')
                 rxui.input(value=p_item.name,placeholder='參數名',on_change=lambda:cList.display_commend).classes('w-20')
-                rxui.input(value=p_item.value,placeholder='值',on_change=lambda:cList.display_commend).classes('w-80')
+                rxui.input(value=p_item.value,placeholder='值',on_change=lambda:cList.display_commend).classes('w-60')
+                btn_delete = ui.button(icon='delete').classes('justify-center mt-3')
+                btn_delete.on_click(lambda: cList.delete(p_item))
 
 
         # add_item = rxui.input(value='', placeholder='參數名')
@@ -129,52 +138,75 @@ with ui.row():
         with ui.row():
             rxui.button('copy',on_click=lambda: copy_and_notify(label_now.text)) 
             # rxui.button('save',)
-            save_=rxui.checkbox('save detail',value=False)
-            search_=rxui.checkbox('Search',value=False)
+            ui.checkbox('save detail',value=False).bind_value(cbox_save,'value')
+            ui.checkbox('Search',value=False).bind_value(cbox_search,'value')
+            
+            # cbox_save.value = save_
 
-        # 這裡要從資料庫挖相對應的類別set 以及現有的資料表
-        
-        
-    
-    # 用來做儲存到資料庫的
-    # with ui.card().bind_visibility_from(save_,'value').classes('w-200'):
-    #     ui.label(f'會被存入的value').tailwind.font_weight('extrabold').text_color('orange-400').\
-    #             font_size('2xl').text_underline_offset('2px')
-    #     rxui.label(lambda: f' {cList.display_commend.value}')
-    #     save_cat_input = ui.input(label='category')
 
-    #     rxui.button('save',on_click=lambda:save_commend_to_database(cList.display_commend.value,'python') )
 
-    with ui.grid():
-        save_cate_to_database_ui()
-
-    # 用作搜尋資料庫的
-    with ui.card().bind_visibility_from(search_,'value'):
+def search_result_ui():
+    with ui.card().bind_visibility_from(cbox_search,'value'):  # 搜尋資料庫的 section
+        ui.label('搜尋').classes(title_classes)
         list_table_name =  [key for key in table_dict.keys()]
-        cate_set = ['python']
+        
+
+        # d_opter.search_all_category()
+        
+        def update_cat_list(choose_table:str,cat_select):
+
+            if len(choose_table)!=0:
+                ref_cat_list.value = d_opter.search_all_category(choose_table[0])  # 更新類別列表
+                cat_select.set_options(ref_cat_list.value)
+            else:
+                cat_select.set_options([])
+
         with ui.row():
             # ui.label('選擇資料表')
-            select_table = ui.select(list_table_name, multiple=True, value=list_table_name[0], label='選擇資料表') \
+            select_table = ui.select(list_table_name, multiple=True, label='選擇資料表') \
                 .classes('w-64').props('use-chips')
+            
 
             ## 許則資料表下的屬性
-            select_cat = ui.select(cate_set, multiple=False, value=cate_set[0], label='選擇類型') \
+            select_cat = ui.select(ref_cat_list.value, multiple=False, label='選擇類型') \
                 .classes('w-64').props('use-chips')
+            
+            select_table.on_value_change(lambda:update_cat_list(select_table.value,select_cat))
+            # select_cat.set_value(ref_cat_list)
 
 
-        print(f'選擇的value:{select_table.value[0]}')
-        print(f'選擇類別的value:{select_cat.value}')
         rxui.button('search',on_click = lambda: show_search_result_ui.refresh(select_table.value[0],select_cat.value))
         show_search_result_ui(cs_result)   # refresh search ui section
-# with ui.card():
 
-# 用以儲存 cat 指令
+
+#commend list
+cList = commend_list()
+cList.add('python')
+
+
+##  search section global ref
+ref_cat_list = to_ref([])
+
+
+
+with ui.row():
+    
+    main_controll_ui()  # 主要控制 ui
+
+
+    with ui.grid():
+        save_cate_to_database_ui()  # 將產生的 command 儲存到指定類別
+        search_result_ui()
+        # 用作搜尋資料庫的
+
+
 def save_commend_to_database(value,category):
-    c_item = Commend(value=value,category=category,descript='')
+    c_item = Command(value=value,category=category,descript='')
     d_opter.insert_sepcify(c_item)
     ui.notify('Sussece save to database')
     # save_cat_input.set_value('')
 
 
+ui.run(native=True,title='GO command line')
 
-ui.run()
+    

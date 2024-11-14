@@ -11,5 +11,5 @@ EXPOSE 8080
 
 RUN pip install -r requirements.txt
 
-CMD [ "python", "check_data.py" ]
+CMD [ "python", "main.py" ]
 

@@ -1,3 +1,10 @@
 
 .db
-*Db.*
+*.Db*
+
+build/
+dist/
+main.spec
+test.db
+test.DB
+
